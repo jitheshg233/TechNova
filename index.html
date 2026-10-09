@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Deck — 3-Stage Interactive Web Dev Learning Experience</title>
+
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- UI Animations & Enhancements Stylesheet -->
+  <link rel="stylesheet" href="animations.css">
+</head>
+<body>
+
+  <!-- Fullscreen Live Interactive Moving Wallpaper Canvas (z-index: -1) -->
+  <canvas id="wallpaper-canvas" class="wallpaper-canvas" aria-hidden="true"></canvas>
+
+  <!-- Animated Aurora Background & Floating Orbs (Stage-Adaptive Moods) -->
+  <div id="aurora-bg" class="aurora-bg mood-learn" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Stage Transition Overlay (Circle Wipe Animation) -->
+  <div id="stage-transition-overlay" class="stage-transition" aria-hidden="true"></div>
+
+  <!-- Fullscreen Particle / Confetti Canvas -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- Notification & Milestone Toast Host -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- APP ROOT -->
+  <div class="app-root">
+
+    <!-- PERSISTENT TOP HEADER -->
+    <header class="top-nav-bar">
+      <!-- App Brand -->
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">Nova Deck</span>
+          <span class="hackathon-tag">TechNova '26</span>
+        </div>
+      </div>
+
+      <!-- PERSISTENT 3-STAGE PROGRESS STEPPER -->
+      <nav class="stage-stepper" aria-label="Learning Journey Progress">
+        <div id="step-pill-1" class="step-pill active" title="Stage 1: Learn">
+          <span class="step-num">1</span>
+          <span class="step-text">Learn</span>
+          <span class="step-check" aria-hidden="true">✓</span>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div id="step-pill-2" class="step-pill" title="Stage 2: Quiz">
+          <span class="step-num">2</span>
+          <span class="step-text">Quiz</span>
+          <span class="step-check" aria-hidden="true">✓</span>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div id="step-pill-3" class="step-pill" title="Stage 3: Results">
+          <span class="step-num">3</span>
+          <span class="step-text">Results</span>
+          <span class="step-check" aria-hidden="true">✓</span>
+        </div>
+      </nav>
+
+      <!-- Global Controls: Sound Mute & Dark/Light Theme -->
+      <div class="nav-actions">
+        <!-- Sound Toggle -->
+        <button id="mute-btn" class="nav-btn ripple-btn" aria-label="Toggle Sound Effects" title="Toggle Sound (M)">
+          <svg class="sound-on-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg class="sound-off-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="theme-btn" class="nav-btn ripple-btn" aria-label="Toggle Dark / Light Theme" title="Toggle Theme (T)">
+          <svg class="moon-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg class="sun-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+
+    <!-- ======================================================== -->
+    <!-- MAIN CONTAINER WITH THREE DISTINCT STAGE PANELS          -->
+    <!-- ======================================================== -->
+    <main class="stage-viewport">
+
+      <!-- ====================================================== -->
+      <!-- STAGE 1: LEARN MODE (Interactive Explanatory Cards)     -->
+      <!-- ====================================================== -->
+      <section id="stage-learn" class="stage-panel active" aria-labelledby="hero-title">
+        
+        <!-- Hero Header -->
+        <header class="learn-hero">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            <span>STAGE 1 • INTERACTIVE EXPLANATORY CARDS</span>
+          </div>
+
+          <h1 id="hero-title" class="typewriter-headline">
+            <span id="hero-typed-text"></span><span class="typewriter-cursor">|</span>
+          </h1>
+
+          <p class="hero-subtext">
+            Explore 8 core Web Development fundamentals below. Flip every card to reveal explanations, code examples, and key takeaways to <strong>unlock the micro-quiz</strong>.
+          </p>
+        </header>
+
+        <!-- Topic Deck Controls & Status Bar -->
+        <div class="deck-hud glass-bar">
+          <div class="deck-hud-left">
+            <span class="deck-counter-label">Card Progress</span>
+            <span id="learn-card-counter" class="deck-counter-val">1 of 8</span>
+          </div>
+
+          <!-- Explored Tracker & Progress Bar -->
+          <div class="deck-hud-center">
+            <div class="topic-dots-row" id="topic-dots-container" role="tablist" aria-label="Topic Cards Progress">
+              <!-- Rendered dynamically by script.js -->
+            </div>
+            <div class="read-status-text">
+              <span id="read-cards-count">0</span> of <span id="total-cards-count">8</span> cards explored
+            </div>
+          </div>
+
+          <div class="deck-hud-right">
+            <span id="deck-filter-mode-badge" class="deck-filter-badge">Full Deck</span>
+          </div>
+        </div>
+
+        <!-- 3D CARD STACK ARENA -->
+        <div class="card-stack-arena" id="learn-arena">
+          
+          <!-- Background Peeking Cards (Stack Visual Effect) -->
+          <div class="stack-card-peek stack-peek-2" aria-hidden="true"></div>
+          <div class="stack-card-peek stack-peek-1" aria-hidden="true"></div>
+
+          <!-- Perspective Wrapper for Mouse Tilt -->
+          <div id="learn-tilt-box" class="card-tilt-container">
+            
+            <!-- 3D Flashcard Element -->
+            <article id="learn-card" class="flashcard-3d" tabindex="0" role="button" aria-expanded="false" aria-label="Flashcard. Tap or press Space to flip and view full explanation.">
+              
+              <!-- Specular Light Glare Overlay -->
+              <div class="card-glare-effect" aria-hidden="true"></div>
+
+              <!-- CARD FRONT (Hook & Prompt) -->
+              <div class="card-side card-side-front">
+                <div class="side-top">
+                  <span id="front-cat-badge" class="category-pill">HTML</span>
+                  <div class="card-read-indicator" id="front-read-status" title="Not yet explored">
+                    <span class="read-icon">○</span>
+                    <span class="read-label">Unread</span>
+                  </div>
+                </div>
+
+                <div class="side-content">
+                  <div class="topic-emoji-avatar" id="front-emoji">🌐</div>
+                  <h2 class="topic-title" id="front-title">Semantic HTML</h2>
+                  <p class="topic-hook-prompt" id="front-hook">
+                    Why shouldn't you just build an entire web page using only &lt;div&gt; tags?
+                  </p>
+                </div>
+
+                <div class="side-bottom">
+                  <div class="flip-action-pill">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    <span>Tap or press <kbd>Space</kbd> to reveal</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD BACK (Explanation, Code Snippet, Tip) -->
+              <div class="card-side card-side-back">
+                <div class="side-top">
+                  <span id="back-cat-badge" class="category-pill">HTML</span>
+                  <div class="card-read-indicator read-done" title="Explored!">
+                    <span class="read-icon">✓</span>
+                    <span class="read-label">Explored</span>
+                  </div>
+                </div>
+
+                <div class="side-content side-scrollable">
+                  <h3 class="back-topic-heading" id="back-title">Semantic HTML</h3>
+                  
+                  <p class="topic-explanation" id="back-explanation">
+                    Semantic HTML uses meaningful tags like &lt;header&gt;, &lt;article&gt;, and &lt;nav&gt; instead of generic containers, conveying structure to both browsers and assistive technology.
+                  </p>
+
+                  <!-- Code Snippet / Analogy Block -->
+                  <div class="code-example-card">
+                    <div class="code-card-header">
+                      <span class="code-lang-tag">Code Example</span>
+                    </div>
+                    <pre class="code-block"><code id="back-code">&lt;nav&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="#about"&gt;About&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+                  </div>
+
+                  <!-- Remember Tip Box -->
+                  <div class="remember-tip-box">
+                    <span class="tip-icon">💡</span>
+                    <div class="tip-body">
+                      <strong>Remember:</strong>
+                      <span id="back-tip">Semantic tags drastically boost SEO and screen reader accessibility (a11y) with zero extra CSS.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="side-bottom">
+                  <span class="back-tap-hint">Tap card to flip back • Use arrows to navigate</span>
+                </div>
+              </div>
+
+            </article>
+
+          </div>
+        </div>
+
+        <!-- LEARN NAVIGATION TOOLBAR -->
+        <div class="learn-controls-row">
+          <button id="btn-prev-card" class="control-btn ripple-btn" aria-label="Previous Card (Left Arrow)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Previous</span>
+            <kbd class="key-tag">←</kbd>
+          </button>
+
+          <button id="btn-flip-card" class="control-btn primary-flip-btn ripple-btn" aria-label="Flip Card (Space)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span id="learn-flip-btn-text">Flip Card</span>
+            <kbd class="key-tag">Space</kbd>
+          </button>
+
+          <button id="btn-next-card" class="control-btn ripple-btn" aria-label="Next Card (Right Arrow)">
+            <span>Next</span>
+            <kbd class="key-tag">→</kbd>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- UNLOCKABLE TAKE THE QUIZ ACTION FOOTER -->
+        <div class="quiz-unlock-box">
+          <button id="btn-launch-quiz" class="launch-quiz-btn locked ripple-btn" aria-label="Take the Micro-Quiz">
+            <span class="lock-icon" aria-hidden="true">🔒</span>
+            <span class="unlock-icon" aria-hidden="true">⚡</span>
+            <span id="launch-quiz-label">Take the Micro-Quiz (Flip all 8 cards to unlock)</span>
+            <svg class="arrow-right-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
+          <!-- Warning tooltip when clicked while locked -->
+          <div id="locked-tooltip" class="locked-tooltip-msg" role="alert" aria-live="assertive">
+            ⚠️ Explore & flip all 8 cards before testing your knowledge! (<span id="locked-cards-remaining">8</span> remaining)
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ====================================================== -->
+      <!-- STAGE 2: MICRO-QUIZ (Synthesized from Studied Topics)  -->
+      <!-- ====================================================== -->
+      <section id="stage-quiz" class="stage-panel" aria-label="Interactive Micro Quiz Arena">
+        
+        <!-- QUIZ HEADS-UP DISPLAY (HUD) -->
+        <div class="quiz-hud-bar glass-bar">
+          
+          <!-- Question Progress & Category -->
+          <div class="quiz-hud-meta">
+            <span id="quiz-cat-badge" class="category-pill">HTML</span>
+            <span id="quiz-question-counter" class="quiz-step-text">Question 1 of 8</span>
+          </div>
+
+          <!-- 15-Second Circular Countdown Ring -->
+          <div class="timer-ring-container" title="15-Second Countdown (Time Bonus!)">
+            <svg class="timer-svg" width="56" height="56" viewBox="0 0 56 56">
+              <circle class="timer-track" cx="28" cy="28" r="23" stroke-width="5" fill="none"></circle>
+              <circle id="timer-bar" class="timer-fill" cx="28" cy="28" r="23" stroke-width="5" fill="none"></circle>
+            </svg>
+            <div class="timer-display">
+              <span id="timer-seconds-text" class="timer-number">15</span>
+            </div>
+          </div>
+
+          <!-- Live Score & Expanding Streak Flame -->
+          <div class="quiz-score-streak">
+            <div class="quiz-score-pill">
+              <span class="score-label">Score</span>
+              <span id="quiz-score-val" class="score-number">0</span>
+            </div>
+
+            <div class="streak-badge-pill" title="Consecutive Correct Streak">
+              <span id="quiz-streak-flame" class="streak-flame">🔥</span>
+              <span id="quiz-streak-val" class="streak-num">0</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Linear Progress Bar -->
+        <div class="quiz-progress-track">
+          <div id="quiz-progress-bar" class="quiz-progress-fill"></div>
+        </div>
+
+        <!-- QUIZ CARD QUESTION STAGE -->
+        <div class="quiz-card-stage">
+          <article class="quiz-main-card glass-panel" id="quiz-question-card">
+            
+            <!-- Question Prompt Header -->
+            <div class="quiz-question-header">
+              <span class="quiz-topic-ref" id="quiz-topic-title">Topic: Semantic HTML</span>
+              <h2 class="quiz-question-title" id="quiz-question-text">
+                Which of the following HTML elements conveys semantic meaning about self-contained content?
+              </h2>
+            </div>
+
+            <!-- 4 Multiple Choice Options (Staggered Animation) -->
+            <div class="quiz-options-grid" id="quiz-options-container" role="radiogroup" aria-label="Quiz Answer Choices">
+              <!-- Rendered dynamically by script.js -->
+            </div>
+
+            <!-- Explanation Callout (Slides in on Answer) -->
+            <div id="quiz-explanation-box" class="quiz-explanation-box" aria-live="polite">
+              <div class="explanation-pill">
+                <span class="exp-icon">💡</span>
+                <strong>Why:</strong>
+                <span id="quiz-why-text"></span>
+              </div>
+            </div>
+
+            <!-- Next Question Footer Action -->
+            <div class="quiz-footer-actions">
+              <div id="floating-score-anchor" class="score-anchor-pos" aria-hidden="true"></div>
+              
+              <button id="btn-next-question" class="quiz-next-btn ripple-btn" style="display: none;" aria-label="Proceed to Next Question">
+                <span>Next Question</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+
+          </article>
+        </div>
+
+      </section>
+
+
+      <!-- ====================================================== -->
+      <!-- STAGE 3: RESULTS & DEEP PERFORMANCE ANALYSIS           -->
+      <!-- ====================================================== -->
+      <section id="stage-results" class="stage-panel" aria-labelledby="results-rank-heading">
+        <div class="results-layout-card glass-panel">
+          
+          <!-- Celebratory Header & Rank Title -->
+          <header class="results-header-box">
+            <div id="results-trophy-avatar" class="trophy-avatar-animated">🏆</div>
+            <span class="results-kicker">Performance Summary</span>
+            <h1 id="results-rank-heading" class="results-rank-title">Web Wizard</h1>
+            <p id="results-rank-motto" class="results-rank-motto">
+              Exceptional speed and comprehensive mastery across all web concepts!
+            </p>
+          </header>
+
+          <!-- Circular Score Gauge Animation -->
+          <div class="radial-gauge-wrapper">
+            <div class="gauge-svg-box">
+              <svg width="150" height="150" viewBox="0 0 150 150">
+                <circle class="gauge-track" cx="75" cy="75" r="62" stroke-width="12" fill="none"></circle>
+                <circle id="results-gauge-fill" class="gauge-fill" cx="75" cy="75" r="62" stroke-width="12" fill="none"></circle>
+              </svg>
+              <div class="gauge-content">
+                <span id="results-accuracy-pct" class="gauge-pct-text">0%</span>
+                <span class="gauge-sublabel">Accuracy</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staggered Performance Stat Cards -->
+          <div class="results-stats-matrix">
+            <div class="matrix-card">
+              <span class="matrix-label">Total Points</span>
+              <span id="stat-total-points" class="matrix-val matrix-highlight">0</span>
+              <span class="matrix-hint">Incl. Speed Bonuses</span>
+            </div>
+            <div class="matrix-card">
+              <span class="matrix-label">Correct / Total</span>
+              <span id="stat-correct-ratio" class="matrix-val">0 / 8</span>
+              <span class="matrix-hint" id="stat-accuracy-text">0% accuracy</span>
+            </div>
+            <div class="matrix-card">
+              <span class="matrix-label">Best Streak</span>
+              <span id="stat-best-streak" class="matrix-val matrix-streak">0 🔥</span>
+              <span class="matrix-hint">Consecutive recall</span>
+            </div>
+            <div class="matrix-card">
+              <span class="matrix-label">Average Speed</span>
+              <span id="stat-avg-speed" class="matrix-val">0.0s</span>
+              <span class="matrix-hint">Per question</span>
+            </div>
+          </div>
+
+          <!-- Category Mastery Breakdown Horizontal Bars -->
+          <div class="category-breakdown-section">
+            <h3 class="section-subheading">Performance by Category</h3>
+            <div class="category-bars-grid" id="category-bars-container">
+              <!-- Rendered dynamically by script.js -->
+            </div>
+          </div>
+
+          <!-- Auto-Generated Plain English Analysis -->
+          <div class="analysis-card-box">
+            <div class="analysis-header">
+              <span class="analysis-icon">🧠</span>
+              <h3 class="analysis-title">Diagnostic Insights</h3>
+            </div>
+            <p id="results-analysis-text" class="analysis-prose">
+              Calculating your personalized assessment...
+            </p>
+          </div>
+
+          <!-- REVIEW YOUR MISTAKES ACCORDION SECTION -->
+          <div class="mistakes-review-section" id="mistakes-section">
+            <div class="mistakes-header">
+              <h3 class="section-subheading">Review Mistakes & Knowledge Gaps</h3>
+              <span id="mistakes-count-badge" class="mistakes-badge">0 Mistakes</span>
+            </div>
+            <div class="mistakes-accordion-list" id="mistakes-accordion-container">
+              <!-- Rendered dynamically by script.js -->
+            </div>
+          </div>
+
+          <!-- RESULTS ACTION BUTTONS -->
+          <div class="results-cta-actions">
+            <!-- Review Weak Topics Button (Direct return to Learn mode for missed cards) -->
+            <button id="btn-review-weak-topics" class="results-btn btn-amber ripple-btn" aria-label="Review Cards of Missed Topics">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+              <span id="review-weak-btn-text">Review Weak Topics in Learn Mode</span>
+            </button>
+
+            <!-- Retake Quiz Button -->
+            <button id="btn-retake-quiz" class="results-btn btn-primary ripple-btn" aria-label="Retake the Micro-Quiz">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              <span>Retake Micro-Quiz</span>
+            </button>
+
+            <!-- Start Over From Beginning -->
+            <button id="btn-start-over" class="results-btn btn-secondary ripple-btn" aria-label="Start Over From Beginning">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>Start Over (Full Deck)</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Live Moving Wallpaper & UI Animation Script -->
+  <script src="background.js" defer></script>
+
+  <!-- Application Script -->
+  <script src="script.js"></script>
+</body>
+</html>

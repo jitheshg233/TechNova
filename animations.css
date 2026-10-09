@@ -1,0 +1,499 @@
+/**
+ * ========================================================
+ * NOVADECK — UI ANIMATIONS & VISUAL ENHANCEMENT SUITE
+ * File: animations.css
+ * 
+ * Features:
+ * 1. CSS Variable intensity controls (tweak animations at one place!)
+ * 2. Fullscreen Live Wallpaper Canvas positioning (z-index: -1)
+ * 3. 3D Flashcard Perspective Hardening (No 3D context flattening)
+ * 4. Page load staggered entrances (header, hero, HUD, controls)
+ * 5. IntersectionObserver reveal-on-scroll animations
+ * 6. Button & link micro-interactions (magnetic lift, radiant glow)
+ * 7. Card & panel hover elevations with smooth lighting
+ * 8. Multi-color gradient-shimmer on headings & badges
+ * 9. Stage stepper active transitions & pulses
+ * 10. Accessibility: prefers-reduced-motion overrides
+ * ========================================================
+ */
+
+/* ========================================================
+   1. ANIMATION CONFIGURATION TOKENS
+   Tweak intensity, speed, and glow radii here!
+   ======================================================== */
+:root {
+  /* Animation Timing & Easing Curves */
+  --motion-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --motion-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Hover Intensity Variables (easily tweaked) */
+  --btn-hover-lift: -3px;
+  --btn-hover-scale: 1.025;
+  --card-hover-lift: -4px;
+  --glow-radius-md: 18px;
+  --glow-radius-lg: 28px;
+
+  /* Stagger Delays */
+  --stagger-step-1: 0.08s;
+  --stagger-step-2: 0.16s;
+  --stagger-step-3: 0.26s;
+  --stagger-step-4: 0.38s;
+  --stagger-step-5: 0.50s;
+
+  /* Heading Shimmer Speed */
+  --shimmer-duration: 6s;
+}
+
+/* ========================================================
+   2. LIVE MOVING WALLPAPER CANVAS LAYER (z-index: -1)
+   ======================================================== */
+#wallpaper-canvas,
+.wallpaper-canvas {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
+/* Ensure body allows wallpaper to show through while maintaining contrast */
+body {
+  background-color: transparent !important;
+}
+
+html {
+  background-color: var(--bg-deep);
+}
+
+/* Backdrop readability contrast booster for flat glass containers */
+.glass-panel,
+.glass-bar,
+.matrix-card,
+.analysis-card-box {
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+
+/* ========================================================
+   3. 3D FLASHCARD PERSPECTIVE HARDENING & CONTENT VISIBILITY
+   Eliminates Chromium/WebKit bug where backdrop-filter and
+   backface-visibility: hidden cull 3D rotated child text.
+   ======================================================== */
+.card-stack-arena,
+.card-tilt-container,
+.flashcard-3d {
+  transform-style: preserve-3d !important;
+  -webkit-transform-style: preserve-3d !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Disable backdrop-filter on card faces to prevent 3D flattening */
+.flashcard-3d .card-side {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Front face defaults */
+.flashcard-3d .card-side-front {
+  transform: rotateY(0deg) translateZ(1px) !important;
+  -webkit-transform: rotateY(0deg) translateZ(1px) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Back face: ensure backface is visible to avoid culling, with solid high-contrast glass */
+.flashcard-3d .card-side-back {
+  transform: rotateY(180deg) translateZ(1px) !important;
+  -webkit-transform: rotateY(180deg) translateZ(1px) !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+  background: #11152b !important;
+}
+
+[data-theme="light"] .flashcard-3d .card-side-back {
+  background: #ffffff !important;
+}
+
+.flashcard-3d .card-side-back * {
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+}
+
+/* Flipped state: hide front, fully reveal back face and its contents */
+.flashcard-3d.flipped .card-side-front {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+.flashcard-3d.flipped .card-side-back {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 10 !important;
+}
+
+.flashcard-3d.flipped .card-glare-effect {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* ========================================================
+   4. PAGE LOAD: STAGGERED FADE-IN & SLIDE-UP
+   ======================================================== */
+@keyframes navSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes contentFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply staggered page-load animations (keeping 3D arena clean) */
+.top-nav-bar {
+  animation: navSlideDown 0.65s var(--motion-ease-spring) both;
+}
+
+.learn-hero {
+  animation: contentFadeUp 0.7s var(--motion-ease-spring) both;
+  animation-delay: var(--stagger-step-1);
+}
+
+.deck-hud {
+  animation: contentFadeUp 0.65s var(--motion-ease-spring) both;
+  animation-delay: var(--stagger-step-2);
+}
+
+.learn-controls-row {
+  animation: contentFadeUp 0.65s var(--motion-ease-spring) both;
+  animation-delay: var(--stagger-step-3);
+}
+
+.quiz-unlock-box {
+  animation: contentFadeUp 0.65s var(--motion-ease-spring) both;
+  animation-delay: var(--stagger-step-4);
+}
+
+/* ========================================================
+   5. REVEAL-ON-SCROLL ANIMATIONS (IntersectionObserver)
+   ======================================================== */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s var(--motion-ease-spring),
+              transform 0.6s var(--motion-ease-spring);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger matrix items when revealed */
+.results-stats-matrix .matrix-card:nth-child(1) { transition-delay: 0.05s; }
+.results-stats-matrix .matrix-card:nth-child(2) { transition-delay: 0.12s; }
+.results-stats-matrix .matrix-card:nth-child(3) { transition-delay: 0.19s; }
+.results-stats-matrix .matrix-card:nth-child(4) { transition-delay: 0.26s; }
+
+/* ========================================================
+   6. BUTTON & INTERACTIVE LINK HOVER EFFECTS
+   ======================================================== */
+.control-btn,
+.launch-quiz-btn,
+.results-btn,
+.nav-btn,
+.quiz-opt-btn {
+  position: relative;
+  transition: transform 0.24s var(--motion-ease-spring),
+              box-shadow 0.24s var(--motion-ease-smooth),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Button Lift & Glow */
+.control-btn:hover:not(:disabled) {
+  transform: translateY(var(--btn-hover-lift));
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.4),
+              0 0 16px -2px rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.65);
+}
+
+.control-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Primary Flip Button Enhanced Glow Pulse */
+.primary-flip-btn:hover:not(:disabled) {
+  transform: translateY(var(--btn-hover-lift)) scale(var(--btn-hover-scale));
+  box-shadow: 0 10px 28px -4px rgba(139, 92, 246, 0.55),
+              0 0 22px rgba(6, 182, 212, 0.35);
+}
+
+/* Quiz Unlock Button When Ready */
+.launch-quiz-btn.unlocked:hover {
+  transform: translateY(var(--btn-hover-lift)) scale(1.02);
+  box-shadow: 0 14px 36px -6px rgba(16, 185, 129, 0.5),
+              0 0 24px rgba(6, 182, 212, 0.4);
+}
+
+/* Results Action CTAs */
+.results-btn:hover {
+  transform: translateY(var(--btn-hover-lift)) scale(var(--btn-hover-scale));
+}
+
+.results-btn.btn-primary:hover {
+  box-shadow: 0 10px 30px -4px rgba(139, 92, 246, 0.55),
+              0 0 20px rgba(99, 102, 241, 0.35);
+}
+
+.results-btn.btn-amber:hover {
+  box-shadow: 0 10px 30px -4px rgba(245, 158, 11, 0.55),
+              0 0 20px rgba(245, 158, 11, 0.35);
+}
+
+/* Top Nav Action Buttons Hover Tilt */
+.nav-btn:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.nav-btn svg {
+  transition: transform 0.35s var(--motion-ease-spring);
+}
+
+.nav-btn:hover svg {
+  transform: rotate(15deg) scale(1.1);
+}
+
+/* ========================================================
+   7. CARDS & PANELS: HOVER LIFT & GLOW ACCENTS
+   ======================================================== */
+.matrix-card {
+  transition: transform 0.28s var(--motion-ease-spring),
+              box-shadow 0.28s var(--motion-ease-smooth),
+              border-color 0.28s ease;
+  will-change: transform, box-shadow;
+}
+
+.matrix-card:hover {
+  transform: translateY(var(--card-hover-lift));
+  box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.6),
+              0 0 20px rgba(139, 92, 246, 0.3);
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+.code-example-card {
+  transition: transform 0.25s var(--motion-ease-spring),
+              box-shadow 0.25s var(--motion-ease-smooth),
+              border-color 0.25s ease;
+}
+
+.code-example-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5),
+              0 0 18px rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.remember-tip-box {
+  transition: transform 0.25s var(--motion-ease-spring),
+              box-shadow 0.25s var(--motion-ease-smooth);
+}
+
+.remember-tip-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -2px rgba(245, 158, 11, 0.2);
+}
+
+/* 3D Flashcard resting hover elevation */
+.card-tilt-container:hover .flashcard-3d:not(.flipped) {
+  box-shadow: 0 30px 65px -12px rgba(0, 0, 0, 0.8),
+              0 0 36px rgba(139, 92, 246, 0.28);
+}
+
+/* ========================================================
+   8. NAVIGATION: STEPPER TRANSITIONS & PULSING GLOW
+   ======================================================== */
+.step-pill {
+  position: relative;
+  transition: all 0.3s var(--motion-ease-spring);
+}
+
+.step-pill.active {
+  animation: activePillGlow 3s infinite ease-in-out;
+}
+
+@keyframes activePillGlow {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.4),
+                0 0 6px rgba(6, 182, 212, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(139, 92, 246, 0.65),
+                0 0 12px rgba(6, 182, 212, 0.55);
+  }
+}
+
+.step-pill:hover:not(.active) {
+  transform: translateY(-1px);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: var(--text-main);
+}
+
+/* Topic Dots Progress Feedback */
+.topic-dot {
+  transition: transform 0.22s var(--motion-ease-spring),
+              background-color 0.22s ease,
+              box-shadow 0.22s ease;
+}
+
+.topic-dot:hover {
+  transform: scale(1.35);
+}
+
+.topic-dot.current {
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+/* ========================================================
+   9. TEXT: GRADIENT SHIMMER & VIBRANCY
+   ======================================================== */
+.typewriter-headline {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #e2e8f0 30%,
+    #a78bfa 50%,
+    #38bdf8 70%,
+    #ffffff 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientShimmer var(--shimmer-duration) ease-in-out infinite alternate;
+}
+
+[data-theme="light"] .typewriter-headline {
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #4338ca 35%,
+    #7c3aed 55%,
+    #0891b2 75%,
+    #0f172a 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.results-rank-title {
+  background: linear-gradient(
+    135deg,
+    #f59e0b 0%,
+    #fbbf24 30%,
+    #8b5cf6 60%,
+    #06b6d4 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientShimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes textGradientShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Brand Logo Subtle Shimmer */
+.brand-logo {
+  transition: transform 0.35s var(--motion-ease-spring),
+              filter 0.35s ease;
+}
+
+.brand-group:hover .brand-logo {
+  transform: rotate(12deg) scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
+}
+
+/* ========================================================
+   10. STAGE VIEWPORT & PANEL TRANSITIONS
+   ======================================================== */
+.stage-panel.active {
+  animation: stageEnterSlide 0.5s var(--motion-ease-spring) both;
+}
+
+@keyframes stageEnterSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========================================================
+   11. ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   ======================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .typewriter-headline,
+  .results-rank-title {
+    -webkit-text-fill-color: currentColor !important;
+    background: none !important;
+    animation: none !important;
+  }
+
+  .step-pill.active {
+    animation: none !important;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4) !important;
+  }
+}
